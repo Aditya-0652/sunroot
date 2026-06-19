@@ -3,9 +3,5 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "env": {
-    "VITE_SUPABASE_URL": "https://gahhbbzcjytvuqqulybf.supabase.co",
-    "VITE_SUPABASE_PUBLISHABLE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdhaGhiYnpjanl0dnVxcXVseWJmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MTA5MzIsImV4cCI6MjA5NzE4NjkzMn0.cOVtWBZtHC2sG-HEFBoAD-UsE18uuM_eIsL8E-KCf0Q"
-  }
+  ]
 }
