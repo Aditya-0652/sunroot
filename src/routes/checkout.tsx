@@ -129,7 +129,10 @@ function CheckoutPage() {
       // Server-side place_order RPC recomputes prices, shipping and totals
       // from the products + site_settings tables. The client cannot manipulate
       // the order total — it only supplies product IDs and quantities.
-      const { data: orderNumber, error } = await supabase.rpc("place_order", {
+      const { data: orderNumber, error } = await (supabase.rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ data: string | null; error: Error | null }>)("place_order", {
         p_customer_name: form.customer_name.trim(),
         p_email: form.email.trim(),
         p_phone: form.phone.trim(),
@@ -151,7 +154,7 @@ function CheckoutPage() {
       clear();
       navigate({
         to: "/order-success/$orderNumber",
-        params: { orderNumber: orderNumber as string },
+        params: { orderNumber },
       });
     } catch (e: unknown) {
       console.error(e);
