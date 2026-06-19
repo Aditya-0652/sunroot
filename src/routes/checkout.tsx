@@ -1,0 +1,361 @@
+import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
+import { useEffect, useMemo, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
+import { useAuth } from "@/hooks/use-auth";
+import { useCart } from "@/hooks/use-cart";
+import { inr } from "@/lib/format";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+import { z } from "zod";
+
+export const Route = createFileRoute("/checkout")({
+  head: () => ({ meta: [{ title: "Checkout · SUNROOT" }] }),
+  component: CheckoutPage,
+});
+
+const schema = z.object({
+  customer_name: z.string().trim().min(2).max(100),
+  email: z.string().trim().email().max(255),
+  phone: z.string().trim().min(7).max(20),
+  address_line1: z.string().trim().min(3).max(200),
+  address_line2: z.string().trim().max(200).optional(),
+  city: z.string().trim().min(2).max(80),
+  state: z.string().trim().min(2).max(80),
+  pincode: z.string().trim().regex(/^\d{5,6}$/, "Enter a valid pincode"),
+  upi_txn_id: z.string().trim().min(6, "Enter the UPI reference number").max(50),
+  notes: z.string().trim().max(500).optional(),
+});
+
+function CheckoutPage() {
+  const { user } = useAuth();
+  const { items, subtotal, clear } = useCart();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [step, setStep] = useState<"details" | "pay">("details");
+  const [form, setForm] = useState({
+    customer_name: "",
+    email: "",
+    phone: "",
+    address_line1: "",
+    address_line2: "",
+    city: "",
+    state: "",
+    pincode: "",
+    upi_txn_id: "",
+    notes: "",
+  });
+
+  useEffect(() => {
+    if (user) {
+      setForm((f) => ({
+        ...f,
+        email: f.email || user.email || "",
+        customer_name:
+          f.customer_name ||
+          (user.user_metadata?.full_name as string | undefined) ||
+          (user.user_metadata?.name as string | undefined) ||
+          "",
+      }));
+    }
+  }, [user]);
+
+  const { data: settings } = useQuery({
+    queryKey: ["site_settings"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+      return data;
+    },
+  });
+
+  const shipping = useMemo(() => {
+    const threshold = settings?.free_shipping_threshold_inr ?? 499;
+    const fee = settings?.shipping_fee_inr ?? 20;
+    if (subtotal <= 0) return 0;
+    return subtotal >= threshold ? 0 : fee;
+  }, [subtotal, settings]);
+
+  const total = subtotal + shipping;
+
+  if (items.length === 0) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-24 text-center">
+        <h1 className="font-serif text-3xl text-primary">Your cart is empty</h1>
+        <Link to="/" className="mt-4 inline-block text-sm text-muted-foreground hover:text-primary">
+          ← Continue shopping
+        </Link>
+      </div>
+    );
+  }
+
+  const goToPayment = () => {
+    const partial = { ...form };
+    delete (partial as Partial<typeof form>).upi_txn_id;
+    const res = schema.omit({ upi_txn_id: true }).safeParse(partial);
+    if (!res.success) {
+      toast.error(res.error.issues[0]?.message ?? "Please check the form");
+      return;
+    }
+    setStep("pay");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const placeOrder = async () => {
+    const res = schema.safeParse(form);
+    if (!res.success) {
+      toast.error(res.error.issues[0]?.message ?? "Please check the form");
+      return;
+    }
+    if (!screenshot) {
+      toast.error("Please upload your payment screenshot");
+      return;
+    }
+    setSubmitting(true);
+    try {
+      // Upload screenshot to private bucket; store only the storage path
+      const ext = screenshot.name.split(".").pop() || "jpg";
+      const path = `${crypto.randomUUID()}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("payment-proofs")
+        .upload(path, screenshot, { upsert: false, contentType: screenshot.type });
+      if (upErr) throw upErr;
+
+      const { data: order, error } = await supabase
+        .from("orders")
+        .insert({
+          customer_name: form.customer_name.trim(),
+          email: form.email.trim(),
+          phone: form.phone.trim(),
+          address_line1: form.address_line1.trim(),
+          address_line2: form.address_line2?.trim() || null,
+          city: form.city.trim(),
+          state: form.state.trim(),
+          pincode: form.pincode.trim(),
+          subtotal_inr: subtotal,
+          shipping_inr: shipping,
+          total_inr: total,
+          upi_txn_id: form.upi_txn_id.trim(),
+          payment_screenshot_url: path, // storage path; admin generates signed URL
+          notes: form.notes?.trim() || null,
+        })
+        .select("id, order_number")
+        .single();
+      if (error || !order) throw error;
+
+      const { error: itemsErr } = await supabase.from("order_items").insert(
+        items.map((it) => ({
+          order_id: order.id,
+          product_id: it.productId,
+          product_name: it.name,
+          unit_price_inr: it.price,
+          quantity: it.quantity,
+          line_total_inr: it.price * it.quantity,
+        })),
+      );
+      if (itemsErr) throw itemsErr;
+
+      clear();
+      navigate({ to: "/order-success/$orderNumber", params: { orderNumber: order.order_number } });
+    } catch (e: unknown) {
+      console.error(e);
+      toast.error(e instanceof Error ? e.message : "Could not place order");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+      <h1 className="font-serif text-4xl font-semibold text-primary">Checkout</h1>
+
+      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
+        <div className="space-y-6">
+          {step === "details" ? (
+            <section className="rounded-2xl border border-border/60 bg-card p-6">
+              {!user && (
+                <div className="mb-5 rounded-xl border border-[var(--color-brand-yellow)]/60 bg-[var(--color-brand-yellow)]/15 p-4">
+                  <p className="text-sm font-semibold text-[var(--color-brand-brown)]">
+                    Quick checkout
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Sign in with Google to autofill your name and email.
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="mt-3 w-full bg-white"
+                    disabled={googleLoading}
+                    onClick={async () => {
+                      setGoogleLoading(true);
+                      try {
+                        const res = await lovable.auth.signInWithOAuth("google", {
+                          redirect_uri: window.location.origin + "/checkout",
+                        });
+                        if (res.error) throw res.error;
+                        if (res.redirected) return;
+                      } catch (e) {
+                        toast.error(e instanceof Error ? e.message : "Google sign-in failed");
+                        setGoogleLoading(false);
+                      }
+                    }}
+                  >
+                    <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48" aria-hidden>
+                      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.5 29 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5c10.8 0 19.5-8.7 19.5-19.5 0-1.2-.1-2.3-.4-3.5z" />
+                      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 18.9 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.5 29 4.5 24 4.5 16.3 4.5 9.6 8.9 6.3 14.7z" />
+                      <path fill="#4CAF50" d="M24 43.5c5 0 9.5-1.9 12.9-5l-6-5c-1.9 1.3-4.3 2-6.9 2-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.1 16.3 43.5 24 43.5z" />
+                      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.4 5.5l6 5C40.6 35.1 43.5 30 43.5 24c0-1.2-.1-2.3-.4-3.5z" />
+                    </svg>
+                    {googleLoading ? "Opening Google…" : "Continue with Google"}
+                  </Button>
+                </div>
+              )}
+              <h2 className="font-serif text-xl font-semibold text-primary">Delivery details</h2>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <Field label="Full name" value={form.customer_name} onChange={(v) => setForm({ ...form, customer_name: v })} />
+                <Field label="Phone" value={form.phone} onChange={(v) => setForm({ ...form, phone: v })} />
+                <Field label="Email" type="email" value={form.email} onChange={(v) => setForm({ ...form, email: v })} className="sm:col-span-2" />
+                <Field label="Address line 1" value={form.address_line1} onChange={(v) => setForm({ ...form, address_line1: v })} className="sm:col-span-2" />
+                <Field label="Address line 2 (optional)" value={form.address_line2} onChange={(v) => setForm({ ...form, address_line2: v })} className="sm:col-span-2" />
+                <Field label="City" value={form.city} onChange={(v) => setForm({ ...form, city: v })} />
+                <Field label="State" value={form.state} onChange={(v) => setForm({ ...form, state: v })} />
+                <Field label="Pincode" value={form.pincode} onChange={(v) => setForm({ ...form, pincode: v })} />
+              </div>
+              <div className="mt-4">
+                <Label className="mb-1.5 block text-sm">Order notes (optional)</Label>
+                <Textarea
+                  value={form.notes}
+                  onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                  placeholder="Anything we should know?"
+                  rows={3}
+                />
+              </div>
+              <Button onClick={goToPayment} size="lg" className="mt-6 w-full">
+                Continue to payment
+              </Button>
+            </section>
+          ) : (
+            <section className="rounded-2xl border border-border/60 bg-card p-6">
+              <h2 className="font-serif text-xl font-semibold text-primary">Pay via UPI</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Pay <span className="font-semibold text-foreground">{inr(total)}</span> using any UPI app — scan the QR or send to the UPI ID below.
+              </p>
+
+              <div className="mt-5 grid gap-4 rounded-xl bg-[oklch(0.97_0.02_230)] p-5 sm:grid-cols-[180px_1fr] sm:items-center">
+                <div className="aspect-square overflow-hidden rounded-lg border border-border bg-white">
+                  {settings?.qr_image_url ? (
+                    <img src={settings.qr_image_url} alt="UPI QR" className="h-full w-full object-contain" />
+                  ) : (
+                    <div className="grid h-full place-items-center p-4 text-center text-xs text-muted-foreground">
+                      QR code not set yet — please contact us
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">UPI ID</p>
+                  <p className="mt-1 select-all break-all font-mono text-base font-semibold text-foreground">
+                    {settings?.upi_id || "Not set yet"}
+                  </p>
+                  <p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">Payee</p>
+                  <p className="font-medium">{settings?.upi_payee_name || "SUNROOT"}</p>
+                  <p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">Amount</p>
+                  <p className="font-semibold">{inr(total)}</p>
+                </div>
+              </div>
+
+              <div className="mt-6 grid gap-4">
+                <div>
+                  <Label className="mb-1.5 block text-sm">UPI transaction / reference ID</Label>
+                  <Input
+                    value={form.upi_txn_id}
+                    onChange={(e) => setForm({ ...form, upi_txn_id: e.target.value })}
+                    placeholder="Paste the 12-digit UPI ref number from your app"
+                  />
+                </div>
+                <div>
+                  <Label className="mb-1.5 block text-sm">Payment screenshot</Label>
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setScreenshot(e.target.files?.[0] ?? null)}
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Upload the success screenshot from your UPI app so we can verify.
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-6 flex gap-3">
+                <Button variant="outline" onClick={() => setStep("details")} className="flex-1">
+                  Back
+                </Button>
+                <Button onClick={placeOrder} disabled={submitting} size="lg" className="flex-1">
+                  {submitting ? "Placing order…" : "Place order"}
+                </Button>
+              </div>
+            </section>
+          )}
+        </div>
+
+        <aside className="h-fit rounded-2xl border border-border/60 bg-card p-6 lg:sticky lg:top-20">
+          <h3 className="font-serif text-lg font-semibold text-primary">Summary</h3>
+          <ul className="mt-4 space-y-3 text-sm">
+            {items.map((it) => (
+              <li key={it.productId} className="flex justify-between gap-3">
+                <span className="text-muted-foreground">
+                  {it.name} <span className="text-xs">× {it.quantity}</span>
+                </span>
+                <span className="font-medium">{inr(it.price * it.quantity)}</span>
+              </li>
+            ))}
+          </ul>
+          <hr className="my-4 border-border/60" />
+          <dl className="space-y-2 text-sm">
+            <Row label="Subtotal" value={inr(subtotal)} />
+            <Row label="Shipping" value={shipping === 0 ? "Free" : inr(shipping)} />
+          </dl>
+          <hr className="my-4 border-border/60" />
+          <div className="flex items-baseline justify-between">
+            <span className="text-sm text-muted-foreground">Total</span>
+            <span className="font-serif text-2xl font-semibold text-primary">{inr(total)}</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  value,
+  onChange,
+  type = "text",
+  className,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  type?: string;
+  className?: string;
+}) {
+  return (
+    <div className={className}>
+      <Label className="mb-1.5 block text-sm">{label}</Label>
+      <Input type={type} value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function Row({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex justify-between">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="font-medium">{value}</dd>
+    </div>
+  );
+}
