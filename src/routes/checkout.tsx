@@ -126,42 +126,33 @@ function CheckoutPage() {
         .upload(path, screenshot, { upsert: false, contentType: screenshot.type });
       if (upErr) throw upErr;
 
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          customer_name: form.customer_name.trim(),
-          email: form.email.trim(),
-          phone: form.phone.trim(),
-          address_line1: form.address_line1.trim(),
-          address_line2: form.address_line2?.trim() || null,
-          city: form.city.trim(),
-          state: form.state.trim(),
-          pincode: form.pincode.trim(),
-          subtotal_inr: subtotal,
-          shipping_inr: shipping,
-          total_inr: total,
-          upi_txn_id: form.upi_txn_id.trim(),
-          payment_screenshot_url: path, // storage path; admin generates signed URL
-          notes: form.notes?.trim() || null,
-        })
-        .select("id, order_number")
-        .single();
-      if (error || !order) throw error;
-
-      const { error: itemsErr } = await supabase.from("order_items").insert(
-        items.map((it) => ({
-          order_id: order.id,
+      // Server-side place_order RPC recomputes prices, shipping and totals
+      // from the products + site_settings tables. The client cannot manipulate
+      // the order total — it only supplies product IDs and quantities.
+      const { data: orderNumber, error } = await supabase.rpc("place_order", {
+        p_customer_name: form.customer_name.trim(),
+        p_email: form.email.trim(),
+        p_phone: form.phone.trim(),
+        p_address_line1: form.address_line1.trim(),
+        p_address_line2: form.address_line2?.trim() || null,
+        p_city: form.city.trim(),
+        p_state: form.state.trim(),
+        p_pincode: form.pincode.trim(),
+        p_upi_txn_id: form.upi_txn_id.trim(),
+        p_payment_screenshot_url: path,
+        p_notes: form.notes?.trim() || null,
+        p_items: items.map((it) => ({
           product_id: it.productId,
-          product_name: it.name,
-          unit_price_inr: it.price,
           quantity: it.quantity,
-          line_total_inr: it.price * it.quantity,
         })),
-      );
-      if (itemsErr) throw itemsErr;
+      });
+      if (error || !orderNumber) throw error ?? new Error("Could not place order");
 
       clear();
-      navigate({ to: "/order-success/$orderNumber", params: { orderNumber: order.order_number } });
+      navigate({
+        to: "/order-success/$orderNumber",
+        params: { orderNumber: orderNumber as string },
+      });
     } catch (e: unknown) {
       console.error(e);
       toast.error(e instanceof Error ? e.message : "Could not place order");
@@ -169,6 +160,7 @@ function CheckoutPage() {
       setSubmitting(false);
     }
   };
+
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
