@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as CartRouteImport } from './routes/cart'
 import { Route as AuthRouteImport } from './routes/auth'
@@ -17,6 +18,11 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProductsSlugRouteImport } from './routes/products.$slug'
 import { Route as OrderSuccessOrderNumberRouteImport } from './routes/order-success.$orderNumber'
 
+const ResetPasswordRoute = ResetPasswordRouteImport.update({
+  id: '/reset-password',
+  path: '/reset-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CheckoutRoute = CheckoutRouteImport.update({
   id: '/checkout',
   path: '/checkout',
@@ -59,6 +65,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/order-success/$orderNumber': typeof OrderSuccessOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -68,6 +75,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/order-success/$orderNumber': typeof OrderSuccessOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -78,6 +86,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cart': typeof CartRoute
   '/checkout': typeof CheckoutRoute
+  '/reset-password': typeof ResetPasswordRoute
   '/order-success/$orderNumber': typeof OrderSuccessOrderNumberRoute
   '/products/$slug': typeof ProductsSlugRoute
 }
@@ -89,6 +98,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/reset-password'
     | '/order-success/$orderNumber'
     | '/products/$slug'
   fileRoutesByTo: FileRoutesByTo
@@ -98,6 +108,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/reset-password'
     | '/order-success/$orderNumber'
     | '/products/$slug'
   id:
@@ -107,6 +118,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cart'
     | '/checkout'
+    | '/reset-password'
     | '/order-success/$orderNumber'
     | '/products/$slug'
   fileRoutesById: FileRoutesById
@@ -117,12 +129,20 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CartRoute: typeof CartRoute
   CheckoutRoute: typeof CheckoutRoute
+  ResetPasswordRoute: typeof ResetPasswordRoute
   OrderSuccessOrderNumberRoute: typeof OrderSuccessOrderNumberRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/reset-password': {
+      id: '/reset-password'
+      path: '/reset-password'
+      fullPath: '/reset-password'
+      preLoaderRoute: typeof ResetPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/checkout': {
       id: '/checkout'
       path: '/checkout'
@@ -181,6 +201,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CartRoute: CartRoute,
   CheckoutRoute: CheckoutRoute,
+  ResetPasswordRoute: ResetPasswordRoute,
   OrderSuccessOrderNumberRoute: OrderSuccessOrderNumberRoute,
   ProductsSlugRoute: ProductsSlugRoute,
 }

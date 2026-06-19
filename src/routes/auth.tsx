@@ -151,6 +151,27 @@ function AuthPage() {
             </Button>
           </form>
 
+          {mode === "signin" && (
+            <div className="mt-3 text-right">
+              <button
+                type="button"
+                onClick={async () => {
+                  if (!email) return toast.error("Enter your email above first");
+                  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                    redirectTo: window.location.origin + "/reset-password",
+                  });
+                  if (error) toast.error(error.message);
+                  else toast.success("Check your inbox for a reset link");
+                }}
+                className="text-xs text-muted-foreground hover:text-[var(--color-brand-orange)]"
+              >
+                Forgot password?
+              </button>
+            </div>
+          )}
+
+
+
           <p className="mt-6 text-center text-sm text-muted-foreground">
             {mode === "signin" ? "Need an owner account?" : "Already have an account?"}{" "}
             <button
