@@ -306,6 +306,23 @@ export type Database = {
           updated_at: string
         }[]
       }
+      place_order: {
+        Args: {
+          p_address_line1: string
+          p_address_line2: string
+          p_city: string
+          p_customer_name: string
+          p_email: string
+          p_items: Json
+          p_notes: string
+          p_payment_screenshot_url: string
+          p_phone: string
+          p_pincode: string
+          p_state: string
+          p_upi_txn_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "user"
