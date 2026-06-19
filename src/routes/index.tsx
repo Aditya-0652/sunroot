@@ -8,13 +8,16 @@ import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "SUNROOT — Thoughtful learning products for kids" },
+      { title: "Sunroot — Thoughtful learning products for kids in India" },
       {
         name: "description",
         content:
-          "Shop SUNROOT's curated learning products for kids. Prepaid UPI orders, free shipping over ₹499 across India.",
+          "Sunroot crafts thoughtful, beautifully designed learning products for kids. Prepaid UPI checkout, free shipping over ₹499 across India.",
       },
+      { property: "og:title", content: "Sunroot — Thoughtful learning products for kids" },
+      { property: "og:url", content: "https://sunroot.lovable.app/" },
     ],
+    links: [{ rel: "canonical", href: "https://sunroot.lovable.app/" }],
   }),
   component: Index,
 });
@@ -107,7 +110,7 @@ function Index() {
             <div className="absolute inset-0 -z-10 scale-110 rounded-full bg-[var(--color-brand-yellow)] blur-3xl opacity-50" />
             <img
               src={logoAsset.url}
-              alt="SUNROOT logo"
+              alt="Sunroot — kids learning products brand logo"
               className="h-64 w-64 rounded-full object-cover shadow-2xl ring-4 ring-white sm:h-80 sm:w-80 lg:h-96 lg:w-96"
             />
           </div>

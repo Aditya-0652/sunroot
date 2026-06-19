@@ -15,7 +15,7 @@ export function SiteHeader() {
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
           <img
             src={logoAsset.url}
-            alt="SUNROOT"
+            alt="Sunroot logo"
             className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-white/40"
           />
           <div className="min-w-0 leading-tight">
