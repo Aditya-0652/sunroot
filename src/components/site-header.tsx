@@ -3,7 +3,7 @@ import { ShoppingBag, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
-import logoAsset from "@/assets/sunroot-logo.png.asset.json";
+import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
 
 export function SiteHeader() {
   const { user, signOut } = useAuth();

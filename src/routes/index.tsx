@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/format";
 import { Sparkles, Truck, ShieldCheck, ArrowRight } from "lucide-react";
-import logoAsset from "@/assets/sunroot-logo.png.asset.json";
+import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
 
 export const Route = createFileRoute("/")({
   head: () => ({

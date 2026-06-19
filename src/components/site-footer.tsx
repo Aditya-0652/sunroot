@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/sunroot-logo.png.asset.json";
+import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
 import { OrderStatusLookup } from "./order-status-lookup";
 
 export function SiteFooter() {
