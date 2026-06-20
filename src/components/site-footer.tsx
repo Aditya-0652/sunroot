@@ -1,5 +1,4 @@
 import logoAsset from "@/assets/logo";
-import { OrderStatusLookup } from "./order-status-lookup";
 
 export function SiteFooter() {
   return (
@@ -7,14 +6,6 @@ export function SiteFooter() {
       id="contact"
       className="mt-24 border-t border-border/60 bg-[var(--color-brand-orange)]/10"
     >
-      <section
-        id="order-status"
-        className="border-b border-border/60 bg-[var(--color-brand-yellow)]/10"
-      >
-        <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-          <OrderStatusLookup />
-        </div>
-      </section>
 
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
         <div>
@@ -42,18 +33,13 @@ export function SiteFooter() {
             <li>
               <a href="/cart" className="hover:text-[var(--color-brand-orange)]">Cart</a>
             </li>
-            <li>
-              <a href="#order-status" className="hover:text-[var(--color-brand-orange)]">
-                Track order
-              </a>
-            </li>
           </ul>
         </div>
         <div>
           <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Help</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li>Prepaid UPI orders only</li>
-            <li>Ships across India</li>
+            <li>Delivery in 3–7 days across India</li>
             <li>Free shipping over ₹499</li>
             <li>
               Contact us:{" "}

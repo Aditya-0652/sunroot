@@ -87,14 +87,11 @@ function Index() {
               >
                 Shop the collection <ArrowRight className="h-4 w-4" />
               </a>
-              <a
-                href="#order-status"
-                className="inline-flex items-center justify-center rounded-full border-2 border-[var(--color-brand-brown)] bg-white/70 px-6 py-3 text-sm font-semibold text-[var(--color-brand-brown)] transition hover:bg-[var(--color-brand-yellow)]/40"
-              >
-                Track my order
-              </a>
             </div>
             <div className="mt-10 flex flex-wrap gap-x-8 gap-y-3 text-xs text-muted-foreground">
+              <span className="flex items-center gap-1.5">
+                <Truck className="h-3.5 w-3.5 text-[var(--color-brand-orange)]" /> Delivery in 3–7 days across India
+              </span>
               <span className="flex items-center gap-1.5">
                 <Sparkles className="h-3.5 w-3.5 text-[var(--color-brand-orange)]" /> Curated by parents
               </span>

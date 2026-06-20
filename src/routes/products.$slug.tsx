@@ -178,7 +178,7 @@ function ProductPage() {
           <div className="mt-8 rounded-xl border border-border/60 bg-card p-4 text-xs text-muted-foreground">
             <p>✓ Prepaid via UPI · Pay using any UPI app</p>
             <p>✓ Free shipping on orders above ₹499 — flat ₹20 below</p>
-            <p>✓ Ships from India within 2–4 business days</p>
+            <p>✓ Delivery in 3–7 days across India</p>
           </div>
         </div>
       </div>
