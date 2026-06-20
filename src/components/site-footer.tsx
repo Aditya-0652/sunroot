@@ -39,7 +39,7 @@ export function SiteFooter() {
           <h4 className="text-sm font-semibold uppercase tracking-wider text-foreground">Help</h4>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             <li>Prepaid UPI orders only</li>
-            <li>Ships across India</li>
+            <li>Delivery in 3–7 days across India</li>
             <li>Free shipping over ₹499</li>
             <li>
               Contact us:{" "}
