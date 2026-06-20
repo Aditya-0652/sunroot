@@ -6,14 +6,6 @@ export function SiteFooter() {
       id="contact"
       className="mt-24 border-t border-border/60 bg-[var(--color-brand-orange)]/10"
     >
-      <section
-        id="order-status"
-        className="border-b border-border/60 bg-[var(--color-brand-yellow)]/10"
-      >
-        <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-          <OrderStatusLookup />
-        </div>
-      </section>
 
       <div className="mx-auto grid max-w-6xl gap-8 px-4 py-12 sm:px-6 md:grid-cols-3">
         <div>
