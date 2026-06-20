@@ -33,11 +33,6 @@ export function SiteFooter() {
             <li>
               <a href="/cart" className="hover:text-[var(--color-brand-orange)]">Cart</a>
             </li>
-            <li>
-              <a href="#order-status" className="hover:text-[var(--color-brand-orange)]">
-                Track order
-              </a>
-            </li>
           </ul>
         </div>
         <div>
