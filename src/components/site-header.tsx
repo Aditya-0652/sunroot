@@ -3,7 +3,7 @@ import { ShoppingBag, User, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useCart } from "@/hooks/use-cart";
 import { Button } from "@/components/ui/button";
-import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
+import logoAsset from "@/assets/logo";
 
 export function SiteHeader() {
   const { user, signOut } = useAuth();
@@ -14,7 +14,7 @@ export function SiteHeader() {
       <div className="mx-auto flex h-16 max-w-6xl items-center justify-between gap-3 px-4 sm:px-6">
         <Link to="/" className="flex min-w-0 items-center gap-2.5">
           <img
-            src={logoAsset.url}
+            src={logoAsset}
             alt="Sunroot logo"
             className="h-10 w-10 shrink-0 rounded-full object-cover ring-2 ring-white/40"
           />

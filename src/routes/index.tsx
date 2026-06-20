@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { inr } from "@/lib/format";
 import { Sparkles, Truck, ShieldCheck, ArrowRight } from "lucide-react";
-import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
+import logoAsset from "@/assets/logo";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -109,7 +109,7 @@ function Index() {
           <div className="relative mx-auto">
             <div className="absolute inset-0 -z-10 scale-110 rounded-full bg-[var(--color-brand-yellow)] blur-3xl opacity-50" />
             <img
-              src={logoAsset.url}
+              src={logoAsset}
               alt="Sunroot — kids learning products brand logo"
               className="h-64 w-64 rounded-full object-cover shadow-2xl ring-4 ring-white sm:h-80 sm:w-80 lg:h-96 lg:w-96"
             />
