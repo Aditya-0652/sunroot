@@ -23,6 +23,7 @@ type Product = {
   slug: string;
   description: string | null;
   price_inr: number;
+  original_price_inr: number | null;
   stock: number;
   is_active: boolean;
   sort_order: number;
@@ -37,6 +38,7 @@ const empty = {
   slug: "",
   description: "",
   price_inr: 0,
+  original_price_inr: 0,
   stock: 0,
   is_active: true,
   sort_order: 0,
@@ -85,6 +87,7 @@ export function ProductsAdmin() {
       slug: p.slug,
       description: p.description ?? "",
       price_inr: p.price_inr,
+      original_price_inr: p.original_price_inr ?? 0,
       stock: p.stock,
       is_active: p.is_active,
       sort_order: p.sort_order,
@@ -116,11 +119,13 @@ export function ProductsAdmin() {
         );
       }
       const slug = form.slug.trim() || slugify(form.name);
+      const op = Math.round(form.original_price_inr);
       const payload = {
         name: form.name.trim(),
         slug,
         description: form.description.trim() || null,
         price_inr: Math.round(form.price_inr),
+        original_price_inr: op > 0 && op > Math.round(form.price_inr) ? op : null,
         stock: Math.round(form.stock),
         is_active: form.is_active,
         sort_order: Math.round(form.sort_order),
@@ -277,7 +282,7 @@ export function ProductsAdmin() {
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
               />
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
               <div>
                 <Label className="mb-1.5 block text-sm">Price (₹)</Label>
                 <Input
@@ -286,6 +291,17 @@ export function ProductsAdmin() {
                   value={form.price_inr}
                   onChange={(e) => setForm({ ...form, price_inr: Number(e.target.value) })}
                 />
+                <p className="mt-1 text-[11px] text-muted-foreground">Selling price</p>
+              </div>
+              <div>
+                <Label className="mb-1.5 block text-sm">MRP (₹)</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={form.original_price_inr}
+                  onChange={(e) => setForm({ ...form, original_price_inr: Number(e.target.value) })}
+                />
+                <p className="mt-1 text-[11px] text-muted-foreground">Optional. Shown struck-through if higher than price.</p>
               </div>
               <div>
                 <Label className="mb-1.5 block text-sm">Stock</Label>
