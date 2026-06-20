@@ -36,8 +36,8 @@ export function SiteHeader() {
           <a href="/#story" className="hover:text-[var(--color-brand-yellow)] transition-colors">
             Story
           </a>
-          <a href="/#order-status" className="hover:text-[var(--color-brand-yellow)] transition-colors">
-            Track order
+          <a href="/#story" className="hover:text-[var(--color-brand-yellow)] transition-colors">
+            Story
           </a>
           <a href="/#contact" className="hover:text-[var(--color-brand-yellow)] transition-colors">
             Contact
