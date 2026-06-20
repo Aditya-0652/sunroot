@@ -27,6 +27,7 @@ type Product = {
   slug: string;
   name: string;
   price_inr: number;
+  original_price_inr: number | null;
   cover_image_url: string | null;
   description: string | null;
   stock: number;
@@ -46,7 +47,7 @@ function Index() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("products")
-        .select("id,slug,name,price_inr,cover_image_url,description,stock")
+        .select("id,slug,name,price_inr,original_price_inr,cover_image_url,description,stock")
         .eq("is_active", true)
         .order("sort_order", { ascending: true })
         .order("created_at", { ascending: false });
@@ -225,7 +226,17 @@ function ProductCard({ p }: { p: Product }) {
           <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">{p.description}</p>
         )}
         <div className="mt-3 flex items-center justify-between">
-          <span className="text-base font-semibold text-foreground">{inr(p.price_inr)}</span>
+          <span className="flex items-baseline gap-2">
+            <span className="text-base font-semibold text-foreground">{inr(p.price_inr)}</span>
+            {p.original_price_inr && p.original_price_inr > p.price_inr && (
+              <>
+                <span className="text-xs text-muted-foreground line-through">{inr(p.original_price_inr)}</span>
+                <span className="rounded-full bg-[var(--color-brand-red)]/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[var(--color-brand-red)]">
+                  {Math.round(((p.original_price_inr - p.price_inr) / p.original_price_inr) * 100)}% off
+                </span>
+              </>
+            )}
+          </span>
           {p.stock <= 0 ? (
             <span className="text-xs uppercase tracking-wider text-destructive">Sold out</span>
           ) : (
