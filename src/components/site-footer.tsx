@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/sunroot-logo.webp.asset.json";
+import logoAsset from "@/assets/logo";
 import { OrderStatusLookup } from "./order-status-lookup";
 
 export function SiteFooter() {
@@ -20,7 +20,7 @@ export function SiteFooter() {
         <div>
           <div className="flex items-center gap-2.5">
             <img
-              src={logoAsset.url}
+              src={logoAsset}
               alt="SUNROOT"
               className="h-10 w-10 rounded-full object-cover"
             />

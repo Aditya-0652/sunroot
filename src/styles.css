@@ -43,8 +43,8 @@
 
 :root {
   --radius: 0.75rem;
-  /* Warm sunlit cream backdrop */
-  --background: oklch(0.97 0.035 80);
+  /* Warm peach / cream backdrop */
+  --background: oklch(0.955 0.045 60);
   --foreground: oklch(0.28 0.09 35);
   --card: oklch(1 0.012 78);
   --card-foreground: oklch(0.28 0.09 35);

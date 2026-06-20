@@ -128,7 +128,17 @@ function ProductPage() {
           <h1 className="font-serif text-4xl font-semibold leading-tight text-primary">
             {product.name}
           </h1>
-          <p className="mt-3 text-2xl font-semibold text-foreground">{inr(product.price_inr)}</p>
+          <p className="mt-3 flex items-baseline gap-3">
+            <span className="text-2xl font-semibold text-foreground">{inr(product.price_inr)}</span>
+            {product.original_price_inr && product.original_price_inr > product.price_inr && (
+              <>
+                <span className="text-base text-muted-foreground line-through">{inr(product.original_price_inr)}</span>
+                <span className="rounded-full bg-[var(--color-brand-red)]/10 px-2.5 py-1 text-xs font-bold uppercase tracking-wider text-[var(--color-brand-red)]">
+                  Save {Math.round(((product.original_price_inr - product.price_inr) / product.original_price_inr) * 100)}%
+                </span>
+              </>
+            )}
+          </p>
           {product.description && (
             <p className="mt-6 whitespace-pre-line text-base leading-relaxed text-muted-foreground">
               {product.description}
