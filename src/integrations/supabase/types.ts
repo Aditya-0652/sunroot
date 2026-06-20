@@ -171,6 +171,7 @@ export type Database = {
           id: string
           is_active: boolean
           name: string
+          original_price_inr: number | null
           price_inr: number
           slug: string
           sort_order: number
@@ -184,6 +185,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name: string
+          original_price_inr?: number | null
           price_inr: number
           slug: string
           sort_order?: number
@@ -197,6 +199,7 @@ export type Database = {
           id?: string
           is_active?: boolean
           name?: string
+          original_price_inr?: number | null
           price_inr?: number
           slug?: string
           sort_order?: number
