@@ -1,5 +1,4 @@
 import logoAsset from "@/assets/logo";
-import { OrderStatusLookup } from "./order-status-lookup";
 
 export function SiteFooter() {
   return (
