@@ -23,7 +23,9 @@ export function SettingsAdmin() {
   const [qrFile, setQrFile] = useState<File | null>(null);
 
   const load = async () => {
-    const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+    const { data } = await (supabase.rpc as unknown as (
+      fn: string,
+    ) => Promise<{ data: Settings | null }>)("admin_get_settings");
     if (data) setS(data as Settings);
   };
 
@@ -42,17 +44,17 @@ export function SettingsAdmin() {
       if (qrFile) {
         qrUrl = await uploadAndSign("site-assets", `upi-qr-${Date.now()}.${qrFile.name.split(".").pop()}`, qrFile);
       }
-      const { error } = await supabase
-        .from("site_settings")
-        .update({
-          upi_id: s.upi_id.trim(),
-          upi_payee_name: s.upi_payee_name.trim() || "SUNROOT",
-          qr_image_url: qrUrl,
-          brand_tagline: s.brand_tagline.trim(),
-          shipping_fee_inr: Math.max(0, Math.round(s.shipping_fee_inr)),
-          free_shipping_threshold_inr: Math.max(0, Math.round(s.free_shipping_threshold_inr)),
-        })
-        .eq("id", 1);
+      const { error } = await (supabase.rpc as unknown as (
+        fn: string,
+        args: Record<string, unknown>,
+      ) => Promise<{ error: Error | null }>)("admin_update_settings", {
+        p_upi_id: s.upi_id.trim(),
+        p_upi_payee_name: s.upi_payee_name.trim() || "SUNROOT",
+        p_qr_image_url: qrUrl,
+        p_brand_tagline: s.brand_tagline.trim(),
+        p_shipping_fee_inr: Math.max(0, Math.round(s.shipping_fee_inr)),
+        p_free_shipping_threshold_inr: Math.max(0, Math.round(s.free_shipping_threshold_inr)),
+      });
       if (error) throw error;
       toast.success("Settings saved");
       setQrFile(null);
