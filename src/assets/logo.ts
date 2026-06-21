@@ -1,2 +1,3 @@
-import logoAsset from "./sunroot-logo.png.asset.json";
-export default logoAsset.url;
+// Logo is served from /public so it works on any host (Vercel, Lovable, etc.)
+const logo = "/sunroot-logo.png";
+export default logo;
