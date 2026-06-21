@@ -260,8 +260,8 @@ function CheckoutPage() {
 
               <div className="mt-5 grid gap-4 rounded-xl bg-[oklch(0.97_0.02_230)] p-5 sm:grid-cols-[180px_1fr] sm:items-center">
                 <div className="aspect-square overflow-hidden rounded-lg border border-border bg-white">
-                  {settings?.qr_image_url ? (
-                    <img src={settings.qr_image_url} alt="UPI QR" className="h-full w-full object-contain" />
+                  {upi?.qr_image_url ? (
+                    <img src={upi.qr_image_url} alt="UPI QR" className="h-full w-full object-contain" />
                   ) : (
                     <div className="grid h-full place-items-center p-4 text-center text-xs text-muted-foreground">
                       QR code not set yet — please contact us
@@ -271,10 +271,10 @@ function CheckoutPage() {
                 <div>
                   <p className="text-xs uppercase tracking-wider text-muted-foreground">UPI ID</p>
                   <p className="mt-1 select-all break-all font-mono text-base font-semibold text-foreground">
-                    {settings?.upi_id || "Not set yet"}
+                    {upi?.upi_id || "Not set yet"}
                   </p>
                   <p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">Payee</p>
-                  <p className="font-medium">{settings?.upi_payee_name || "SUNROOT"}</p>
+                  <p className="font-medium">{upi?.upi_payee_name || "SUNROOT"}</p>
                   <p className="mt-3 text-xs uppercase tracking-wider text-muted-foreground">Amount</p>
                   <p className="font-semibold">{inr(total)}</p>
                 </div>
