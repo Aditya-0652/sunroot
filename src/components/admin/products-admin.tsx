@@ -15,7 +15,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
-import { Pencil, Trash2, Plus, Image as ImageIcon, X } from "lucide-react";
+import { Pencil, Trash2, Plus, Image as ImageIcon, X, Minus } from "lucide-react";
 
 type Product = {
   id: string;
@@ -186,6 +186,22 @@ export function ProductsAdmin() {
     load();
   };
 
+  const adjustStock = async (p: Product, delta: number) => {
+    const next = Math.max(0, p.stock + delta);
+    if (next === p.stock) return;
+    setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, stock: next } : x)));
+    const { error } = await supabase.from("products").update({ stock: next }).eq("id", p.id);
+    if (error) {
+      toast.error(error.message);
+      load();
+    }
+  };
+
+  const clearCover = () => {
+    setForm((f) => ({ ...f, cover_image_url: null }));
+    setCoverFile(null);
+  };
+
   const deleteMedia = async (m: Media) => {
     await supabase.from("product_media").delete().eq("id", m.id);
     setMedia((prev) => prev.filter((x) => x.id !== m.id));
@@ -237,15 +253,37 @@ export function ProductsAdmin() {
                     </div>
                   </td>
                   <td className="px-4 py-3">{inr(p.price_inr)}</td>
-                  <td className="px-4 py-3">{p.stock}</td>
+                  <td className="px-4 py-3">
+                    <div className="inline-flex items-center gap-1 rounded-md border border-border bg-background">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => adjustStock(p, -1)}
+                        aria-label="Decrease stock"
+                      >
+                        <Minus className="h-3 w-3" />
+                      </Button>
+                      <span className="min-w-[2ch] text-center text-sm tabular-nums">{p.stock}</span>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7"
+                        onClick={() => adjustStock(p, 1)}
+                        aria-label="Increase stock"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
                     <Switch checked={p.is_active} onCheckedChange={() => toggleActive(p)} />
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <Button variant="ghost" size="icon" onClick={() => openEdit(p)}>
-                      <Pencil className="h-4 w-4" />
+                    <Button variant="outline" size="sm" onClick={() => openEdit(p)} className="mr-1">
+                      <Pencil className="mr-1 h-3.5 w-3.5" /> Edit
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => remove(p)}>
+                    <Button variant="ghost" size="icon" onClick={() => remove(p)} aria-label="Delete">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </td>
@@ -335,17 +373,23 @@ export function ProductsAdmin() {
             <div>
               <Label className="mb-1.5 block text-sm">Cover image</Label>
               {form.cover_image_url && !coverFile && (
-                <img
-                  src={form.cover_image_url}
-                  alt=""
-                  className="mb-2 h-28 w-28 rounded-md object-cover"
-                />
+                <div className="mb-2 flex items-center gap-3">
+                  <img
+                    src={form.cover_image_url}
+                    alt=""
+                    className="h-28 w-28 rounded-md object-cover"
+                  />
+                  <Button type="button" variant="outline" size="sm" onClick={clearCover}>
+                    <X className="mr-1 h-3.5 w-3.5" /> Remove
+                  </Button>
+                </div>
               )}
               <Input
                 type="file"
                 accept="image/*"
                 onChange={(e) => setCoverFile(e.target.files?.[0] ?? null)}
               />
+              <p className="mt-1 text-[11px] text-muted-foreground">Upload a new file to replace the current cover image.</p>
             </div>
 
             <div>
