@@ -36,7 +36,7 @@ function CheckoutPage() {
   const { items, subtotal, clear } = useCart();
   const navigate = useNavigate();
   const [submitting, setSubmitting] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [step, setStep] = useState<"details" | "pay">("details");
   const [form, setForm] = useState({
@@ -190,43 +190,6 @@ function CheckoutPage() {
         <div className="space-y-6">
           {step === "details" ? (
             <section className="rounded-2xl border border-border/60 bg-card p-6">
-              {!user && (
-                <div className="mb-5 rounded-xl border border-[var(--color-brand-yellow)]/60 bg-[var(--color-brand-yellow)]/15 p-4">
-                  <p className="text-sm font-semibold text-[var(--color-brand-brown)]">
-                    Quick checkout
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Sign in with Google to autofill your name and email.
-                  </p>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="mt-3 w-full bg-white"
-                    disabled={googleLoading}
-                    onClick={async () => {
-                      setGoogleLoading(true);
-                      try {
-                        const res = await lovable.auth.signInWithOAuth("google", {
-                          redirect_uri: window.location.origin + "/checkout",
-                        });
-                        if (res.error) throw res.error;
-                        if (res.redirected) return;
-                      } catch (e) {
-                        toast.error(e instanceof Error ? e.message : "Google sign-in failed");
-                        setGoogleLoading(false);
-                      }
-                    }}
-                  >
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 48 48" aria-hidden>
-                      <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35.5 24 35.5c-6.4 0-11.5-5.1-11.5-11.5S17.6 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.5 29 4.5 24 4.5 13.2 4.5 4.5 13.2 4.5 24S13.2 43.5 24 43.5c10.8 0 19.5-8.7 19.5-19.5 0-1.2-.1-2.3-.4-3.5z" />
-                      <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 16 18.9 12.5 24 12.5c2.9 0 5.6 1.1 7.6 2.9l5.7-5.7C33.6 6.5 29 4.5 24 4.5 16.3 4.5 9.6 8.9 6.3 14.7z" />
-                      <path fill="#4CAF50" d="M24 43.5c5 0 9.5-1.9 12.9-5l-6-5c-1.9 1.3-4.3 2-6.9 2-5.3 0-9.7-3.1-11.3-7.5l-6.5 5C9.6 39.1 16.3 43.5 24 43.5z" />
-                      <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.3 4.1-4.4 5.5l6 5C40.6 35.1 43.5 30 43.5 24c0-1.2-.1-2.3-.4-3.5z" />
-                    </svg>
-                    {googleLoading ? "Opening Google…" : "Continue with Google"}
-                  </Button>
-                </div>
-              )}
               <h2 className="font-serif text-xl font-semibold text-primary">Delivery details</h2>
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
                 <Field label="Full name" value={form.customer_name} onChange={(v) => setForm({ ...form, customer_name: v })} />
