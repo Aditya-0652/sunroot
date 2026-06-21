@@ -288,7 +288,45 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_get_settings: {
+        Args: never
+        Returns: {
+          brand_tagline: string
+          free_shipping_threshold_inr: number
+          id: number
+          qr_image_url: string | null
+          shipping_fee_inr: number
+          updated_at: string
+          upi_id: string
+          upi_payee_name: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "site_settings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      admin_update_settings: {
+        Args: {
+          p_brand_tagline: string
+          p_free_shipping_threshold_inr: number
+          p_qr_image_url: string
+          p_shipping_fee_inr: number
+          p_upi_id: string
+          p_upi_payee_name: string
+        }
+        Returns: undefined
+      }
       claim_admin: { Args: never; Returns: boolean }
+      get_upi_settings: {
+        Args: never
+        Returns: {
+          qr_image_url: string
+          upi_id: string
+          upi_payee_name: string
+        }[]
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
