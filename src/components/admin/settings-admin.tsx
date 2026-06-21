@@ -23,7 +23,9 @@ export function SettingsAdmin() {
   const [qrFile, setQrFile] = useState<File | null>(null);
 
   const load = async () => {
-    const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+    const { data } = await (supabase.rpc as unknown as (
+      fn: string,
+    ) => Promise<{ data: Settings | null }>)("admin_get_settings");
     if (data) setS(data as Settings);
   };
 
