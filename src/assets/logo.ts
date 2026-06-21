@@ -1,3 +1,2 @@
-// Logo is served from /public so it works on any host (Vercel, Lovable, etc.)
-const logo = "/logo.webp";
-export default logo;
+import logoAsset from "./sunroot-logo.png.asset.json";
+export default logoAsset.url;
