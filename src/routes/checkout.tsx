@@ -69,8 +69,25 @@ function CheckoutPage() {
   const { data: settings } = useQuery({
     queryKey: ["site_settings"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+      const { data } = await supabase
+        .from("site_settings")
+        .select("id, brand_tagline, shipping_fee_inr, free_shipping_threshold_inr, updated_at")
+        .eq("id", 1)
+        .maybeSingle();
       return data;
+    },
+  });
+
+  const { data: upi } = useQuery({
+    queryKey: ["upi_settings"],
+    enabled: step === "pay",
+    queryFn: async () => {
+      const { data } = await (supabase.rpc as unknown as (
+        fn: string,
+      ) => Promise<{ data: Array<{ upi_id: string; upi_payee_name: string; qr_image_url: string | null }> | null }>)(
+        "get_upi_settings",
+      );
+      return data?.[0] ?? null;
     },
   });
 
