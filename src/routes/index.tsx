@@ -37,7 +37,7 @@ function Index() {
   const { data: settings } = useQuery({
     queryKey: ["site_settings"],
     queryFn: async () => {
-      const { data } = await supabase.from("site_settings").select("*").eq("id", 1).maybeSingle();
+      const { data } = await supabase.from("site_settings").select("brand_tagline").eq("id", 1).maybeSingle();
       return data;
     },
   });
